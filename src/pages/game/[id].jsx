@@ -1,8 +1,12 @@
 import React from "react";
 import { useEffect, useState } from "react";
+import ScrollToBottom from "react-scroll-to-bottom";
 import { useRouter } from "next/router";
 import io from "socket.io-client";
+
+
 import CardChoice from "../../components/cardChoice";
+
 import cardChoiceContainerStyle from "../../styles/cardChoiceContainer.module.css";
 import bottomInteractContainerStyle from "../../styles/bottomInteractContainer.module.css";
 
@@ -13,6 +17,7 @@ export default function Game() {
   const gameId = router.query.id;
 
   const [joined, setJoined] = useState(false);
+  const [messageList, setMessageList] = useState([{}]);
 
   let nameTextInput = React.createRef();
 
@@ -25,6 +30,7 @@ export default function Game() {
     })
     socket.on("message", (message) => {
       console.log(message)
+      setMessageList((messageList) => [...messageList, message])
     })
     socket.on("users", (users) => {
       console.log(users)
@@ -59,11 +65,29 @@ export default function Game() {
           )}
           {joined && (
             <div className="game__joined">
-              <h2 className="game__joined-title">Joined</h2>
-              <p className="game__joined-text">
-                You have joined the game.
-              </p>
-              <div className={bottomInteractContainerStyle.background}>
+
+              <div className={bottomInteractContainerStyle.chatContainer}>
+
+                <div className={bottomInteractContainerStyle.chat}>
+                  <ScrollToBottom className={bottomInteractContainerStyle.chat}>
+                    {messageList.map((message) => (
+                      <p className={bottomInteractContainerStyle.chatText}>{message.message}</p>
+                    ))}
+                  </ScrollToBottom>
+                </div>
+                <div className={bottomInteractContainerStyle.chatInput}>
+                  <input
+                    type="text"
+                    className={bottomInteractContainerStyle.chatInput}
+                    placeholder="Enter your message"
+                  />
+                  <button
+                    className={bottomInteractContainerStyle.chatButton}
+                  >
+                    Send
+                  </button>
+                </div>
+
                 <div className={cardChoiceContainerStyle.background}>
                   <CardChoice number="1" onClick={() => { console.log("Card pressed") }} />
                   <CardChoice number="2" onClick={() => { console.log("Card pressed") }} />
@@ -73,7 +97,7 @@ export default function Game() {
                   <CardChoice number="13" onClick={() => { console.log("Card pressed") }} />
                   <CardChoice number="21" onClick={() => { console.log("Card pressed") }} />
                 </div>
-                <p className ={bottomInteractContainerStyle.gameStatus} >Pick a card</p>
+                <p className={bottomInteractContainerStyle.gameStatus} >Pick a card</p>
               </div>
             </div>
           )}
